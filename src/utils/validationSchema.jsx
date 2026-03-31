@@ -29,13 +29,13 @@ export const validationSchema = yup.object({
                     .typeError("Amount must be a number"),
             })
         )
+
         .min(1, "At least one payer is required")
         .test(
             "max-limit",
             "Total paid amount cannot exceed total expense",
             function (paidBy) {
                 const { totalExpense } = this.parent;
-
                 if (!paidBy || !totalExpense) return true;
 
                 const totalPaid = paidBy.reduce(

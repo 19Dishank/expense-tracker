@@ -1,9 +1,10 @@
-import React, { memo } from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 
 const ExpenseInput = ({ setResult }) => {
+
     const methods = useFormContext()
-    const { register, handleSubmit, control, formState: { errors } } = methods
+    const { register, handleSubmit, control, formState: { errors }, trigger, watch, setError } = methods
     const {
         fields: paidByFields,
         append: appendPerson,
@@ -12,6 +13,8 @@ const ExpenseInput = ({ setResult }) => {
         control,
         name: "paidBy"
     })
+
+    const totalPersons = watch("totalPersons")
 
     const handleExpenseCalculate = (data) => {
         const amountsPaid = data.paidBy.map((amt) => parseInt(amt.amount) || 0)
@@ -26,97 +29,185 @@ const ExpenseInput = ({ setResult }) => {
         setResult({
             totalPaid,
             totalExpense,
+            totalPersons,
             remainedAmount,
             splitAmountPerPerson,
             personsWhoHaveToPay,
             paidBy: data.paidBy
         })
     }
+    const handleAppend = () => {
+        trigger("paidBy");
+        if (errors.paidBy) return
+        if (!errors?.paidBy) {
+            appendPerson({ personName: "", amount: "" })
+        }
+    }
+
+    const handleButtonDisabled = () => {
+        if (paidByFields.length >= watch("totalPersons")) return true
+        setError("maximum-limit", { type: "custom", message: "Maximum limit reached" })
+    }
+
+    const handleCustomChange = () => {
+        for (let index = 0; index < parseInt(totalPersons) - 1; index++) {
+            appendPerson({ personName: "", amount: "" })
+        }
+    };
 
     return (
-        <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <input
-                    type='text'
-                    placeholder='Total Expense'
-                    {...register('totalExpense')}
-                    className="p-2 border rounded-lg w-full"
-                />
-                {errors?.totalExpense && (<p className="text-red-500 text-sm col-span-2">{errors?.totalExpense.message}</p>)}
-                <input
-                    type='number'
-                    min={0}
-                    placeholder='Total Persons'
-                    {...register('totalPersons')}
-                    className="p-2 border rounded-lg w-full"
-                />
-                {errors?.totalPersons && (<p className="text-red-500 text-sm col-span-2">{errors?.totalPersons.message}</p>)}
-                {/* <button onClick={() => appendPerson({ personName: "", amount: "" })}>Done</button> */}
-            </div>
-
-            <div className="space-y-3">
-                {paidByFields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-5 gap-2 items-center">
-
-                        <input
-                            type="text"
-                            placeholder="Person Name"
-                            {...register(`paidBy.${index}.personName`)}
-                            className="col-span-2 p-2 border rounded-lg"
-                        />
-
-                        {errors?.paidBy?.[index]?.personName && (
-                            <p className="text-red-500 text-sm col-span-2">
-                                {errors.paidBy[index].personName.message}
-                            </p>
-                        )}
-
-                        <input
-                            type="number"
-                            placeholder="Amount"
-                            {...register(`paidBy.${index}.amount`)}
-                            className="col-span-2 p-2 border rounded-lg"
-                        />
-
-                        {errors?.paidBy?.[index]?.amount && (
-                            <p className="text-red-500 text-sm col-span-2">
-                                {errors.paidBy[index].amount.message}
-                            </p>
-                        )}
-
-                        {index > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => removePerson(index)}
-                                className="bg-red-500 text-white rounded-lg h-full w-10 py-1"
-                            >
-                                ✕
-                            </button>
-                        )}
+        <>
+            {/* {parseInt(totalPersons) != paidByFields.length && (
+                <span className="px-3  py-1 bg-amber-100 text-amber-600 text-xs font-bold  tracking-wider rounded-full">
+                    group size and payers doesn't match
+                </span>
+            )} */}
+            <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-5 mt-5 sm:space-y-6 lg:space-y-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-slate-600 capitalize tracking-wider ml-1">Total Expense</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
+                            <input
+                                type='text'
+                                placeholder='0.00'
+                                {...register('totalExpense')}
+                                className={`w-full pl-7 pr-4 py-3 bg-slate-50 border ${errors?.totalExpense ? 'border-red-300 ring-red-50' : 'border-slate-200 focus:border-indigo-500 ring-transparent'} rounded-xl outline-none focus:ring-4 transition-all`}
+                            />
+                        </div>
+                        {errors?.totalExpense && (<p className="text-red-500 text-[11px] font-medium mt-1 ml-1">{errors?.totalExpense.message}</p>)}
                     </div>
-                ))}
-            </div>
-            {errors?.paidBy?.root && (
-                <p className="text-red-500 text-sm col-span-2">
-                    {errors?.paidBy.root.message}
-                </p>
-            )}
-            <div className="flex gap-3">
-                <button
-                    type="button"
-                    onClick={() => appendPerson({ personName: "", amount: "" })}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
-                >
-                    + Add person
-                </button>
 
-                <input
-                    type="submit"
-                    value="Submit"
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg cursor-pointer"
-                />
-            </div>
-        </form>
+                    <div className="space-y-1.5">
+                        <label className="text-[12px] font-bold text-slate-600 capitalize tracking-wider ml-1">Group Size</label>
+                        <input
+                            type='number'
+                            min={0}
+
+                            placeholder='No. of people'
+                            {...register('totalPersons')}
+                            className={`w-full px-4 py-3 bg-slate-50 border ${errors?.totalPersons ? 'border-red-300 ring-red-50' : 'border-slate-200 focus:border-indigo-500 ring-transparent'} rounded-xl outline-none focus:ring-4 transition-all`}
+                        />
+                        {errors?.totalPersons && (<p className="text-red-500 text-[11px] font-medium mt-1 ml-1">{errors?.totalPersons.message}</p>)}
+                        {/* <button onClick={handleCustomChange} >Next</button> */}
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 className="text-sm font-bold text-slate-700">Payments</h3>
+
+                    </div>
+
+                    <div className="space-y-3 h-full overflow-y-auto pr-2 custom-scrollbar">
+                        {paidByFields.map((field, index) => (
+                            <div
+                                key={field.id}
+                                className="group relative bg-linear-to-b from-white to-slate-50/50 p-4 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-indigo-300 hover:bg-linear-to-b hover:from-indigo-50/30 hover:to-slate-50/80 transition-all duration-150"
+                            >
+                                <div className="grid grid-cols-12 gap-3 items-start">
+
+                                    <div className="col-span-6">
+                                        <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Payer</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Person name"
+                                            {...register(`paidBy.${index}.personName`)}
+                                            className={`w-full text-sm font-medium bg-white rounded-lg px-3 py-2.5 border outline-none transition-all duration-150
+                                         ${errors?.paidBy?.[index]?.personName
+                                                    ? "border-red-400 focus:ring-2 focus:ring-red-200/50 text-red-900"
+                                                    : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"} placeholder:text-slate-400`}
+                                        />
+                                        <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
+                                            {errors?.paidBy?.[index]?.personName?.message || ""}
+                                        </p>
+                                    </div>
+
+                                    <div className="col-span-4">
+                                        <div className="relative flex flex-col">
+                                            <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Amount</label>
+                                            <div
+                                                className={`flex items-center bg-white rounded-lg px-3 border outline-none transition-all duration-150
+                                                    ${errors?.paidBy?.[index]?.amount
+                                                        ? "border-red-400 focus-within:ring-2 focus-within:ring-red-200/50"
+                                                        : "border-slate-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100"}`}
+                                            >
+                                                <span className="text-slate-400 text-sm font-semibold mr-1">₹</span>
+                                                <input
+                                                    type="number"
+                                                    placeholder="0.00"
+                                                    {...register(`paidBy.${index}.amount`)}
+                                                    className="w-full text-sm font-semibold bg-transparent outline-none py-2.5 placeholder:text-slate-400"
+                                                />
+                                            </div>
+
+                                            {errors?.paidBy?.[index]?.amount && (
+                                                <p className="text-red-500 text-xs mt-1.5 font-medium">
+                                                    {errors.paidBy[index].amount.message}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="col-span-2 flex justify-end">
+                                        {index > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removePerson(index)}
+                                                className="h-10 w-10 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+                                            >
+                                                <svg
+                                                    className="w-5 h-5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {errors?.paidBy?.root && (
+                    <div className="p-2.5 sm:p-3 bg-red-50 border border-red-100 rounded-xl">
+                        <p className="text-red-600 text-xs text-center font-medium">
+                            {errors?.paidBy.root.message}
+                        </p>
+                    </div>
+                )}
+
+                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
+                    <button
+                        type="button"
+                        onClick={handleAppend}
+                        disabled={paidByFields.length >= watch("totalPersons")}
+                        // disabled={disabled}
+                        className=" border-dashed flex-1 inline-flex items-center justify-center gap-2  px-4 sm:px-5 py-2.5 sm:py-3 border-2 rounded-xl font-bold  text-xs sm:text-sm  transition-all duration-150  bg-slate-100 text-slate-700 border-slate-400 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed disabled:opacity-70">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add payer
+                    </button>
+
+                    <button
+                        type="submit"
+                        className="flex-1 px-4 sm:px-5 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-200/50 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 cursor-pointer"
+                    >
+                        Calculate Splits
+                    </button>
+                </div>
+            </form>
+        </>
     )
 }
 
