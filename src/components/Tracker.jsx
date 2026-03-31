@@ -34,14 +34,27 @@ const Tracker = () => {
                     {result ? (
                         <div className="space-y-4">
                             <div className="grid grid-cols-5 gap-4 text-sm">
-                                <Card credentials={result.totalExpense} title="total Expense" />
-                                <Card credentials={result.totalPaid} title="Total Paid" />
                                 <Card
+                                    symbol={"₹"}
+                                    credentials={result.totalExpense}
+                                    title="total Expense"
+                                />
+                                <Card
+                                    symbol={"₹"}
+                                    credentials={result.totalPaid}
+                                    title="Total Paid"
+                                />
+                                <Card
+                                    symbol={"₹"}
                                     className={`${result.remainedAmount > 0 ? 'text-red-500' : 'text-green-500'}`}
                                     credentials={Math.abs(result.remainedAmount)}
                                     title={result.remainedAmount > 0 ? "Remaining to pay " : "Available Balance"} />
 
-                                <Card credentials={result.splitAmountPerPerson} title="Per Person" />
+                                <Card
+                                    symbol={"₹"}
+                                    credentials={result.splitAmountPerPerson}
+                                    title="Per Person"
+                                />
                                 <Card credentials={result.personsWhoHaveToPay} title="Person remaining to pay" />
                             </div>
 
@@ -90,11 +103,11 @@ const Tracker = () => {
 export default Tracker
 
 
-const Card = ({ title, credentials, className }) => {
+const Card = ({ title, credentials, className, symbol }) => {
     return (
         <div className={`p-3 bg-gray-50 rounded-lg border ${className}`}>
             <p className="text-gray-500">{title}</p>
-            <p className="font-semibold text-lg">₹{credentials}</p>
+            <p className="font-semibold text-lg">{symbol}{credentials}</p>
         </div>
     )
 }

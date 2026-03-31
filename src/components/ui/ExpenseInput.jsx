@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 
 const ExpenseInput = ({ setResult }) => {
@@ -120,4 +120,4 @@ const ExpenseInput = ({ setResult }) => {
     )
 }
 
-export default ExpenseInput
+export default memo(ExpenseInput)
