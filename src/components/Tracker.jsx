@@ -9,10 +9,10 @@ const Tracker = () => {
         defaultValues: {
             totalExpense: null,
             totalPersons: 1,
-            paidBy: [{ personName: "", amount: null }]
+            paidBy: [{ personName: "person1", amount: null }]
         },
-        // resolver: yupResolver(validationSchema),
-        mode: "onBlur"
+        resolver: yupResolver(validationSchema),
+        mode: "onSubmit"
     })
 
     const [result, setResult] = useState(null)

@@ -11,7 +11,8 @@ const ExpenseInput = ({ setResult }) => {
         remove: removePerson,
     } = useFieldArray({
         control,
-        name: "paidBy"
+        name: "paidBy",
+        shouldUnregister: true
     })
 
     const totalPersons = watch("totalPersons")
@@ -50,47 +51,102 @@ const ExpenseInput = ({ setResult }) => {
     }
 
     const handleCustomChange = () => {
-        for (let index = 0; index < parseInt(totalPersons) - 1; index++) {
-            appendPerson({ personName: "", amount: "" })
+        const desired = parseInt(totalPersons) || 0;
+        const current = paidByFields.length;
+
+        if (desired > current) {
+            for (let i = 0; i < desired - current; i++) {
+                appendPerson({
+                    personName: `person${current + i + 1}`,
+                    amount: ""
+                });
+            }
+        } else if (desired < current) {
+            for (let i = current; i > desired; i--) {
+                removePerson(i - 1);
+            }
         }
     };
 
+    useEffect(() => {
+        const desired = parseInt(totalPersons) || 0;
+        const current = paidByFields.length;
+
+        if (desired > current) {
+            for (let i = 0; i < desired - current; i++) {
+                appendPerson({
+                    personName: `person${current + i + 1}`,
+                    amount: ""
+                });
+            }
+        } else if (desired < current) {
+            for (let i = current; i > desired; i--) {
+                removePerson(i - 1);
+            }
+        }
+    }, [totalPersons]);
     return (
         <>
-            {/* {parseInt(totalPersons) != paidByFields.length && (
-                <span className="px-3  py-1 bg-amber-100 text-amber-600 text-xs font-bold  tracking-wider rounded-full">
-                    group size and payers doesn't match
-                </span>
-            )} */}
             <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-5 mt-5 sm:space-y-6 lg:space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                    <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-600 capitalize tracking-wider ml-1">Total Expense</label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
+                <div className="space-y-4">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
+                                Total Expense
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                                    ₹
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder="0.00"
+                                    {...register('totalExpense')}
+                                    className={`w-full pl-8 pr-4 py-3 text-sm bg-white border ${errors?.totalExpense
+                                        ? 'border-red-300 ring-red-50'
+                                        : 'border-slate-200 focus:border-indigo-500 ring-transparent'
+                                        } rounded-xl outline-none focus:ring-4 transition-all`}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
+                                Group Size
+                            </label>
                             <input
-                                type='text'
-                                placeholder='0.00'
-                                {...register('totalExpense')}
-                                className={`w-full pl-7 pr-4 py-3 bg-slate-50 border ${errors?.totalExpense ? 'border-red-300 ring-red-50' : 'border-slate-200 focus:border-indigo-500 ring-transparent'} rounded-xl outline-none focus:ring-4 transition-all`}
+                                type="number"
+                                min={0}
+                                placeholder="No. of people"
+                                {...register('totalPersons')}
+                                className={`w-full px-4 py-3 text-sm bg-white border ${errors?.totalPersons
+                                    ? 'border-red-300 ring-red-50'
+                                    : 'border-slate-200 focus:border-indigo-500 ring-transparent'
+                                    } rounded-xl outline-none focus:ring-4 transition-all`}
                             />
                         </div>
-                        {errors?.totalExpense && (<p className="text-red-500 text-[11px] font-medium mt-1 ml-1">{errors?.totalExpense.message}</p>)}
                     </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-[12px] font-bold text-slate-600 capitalize tracking-wider ml-1">Group Size</label>
-                        <input
-                            type='number'
-                            min={0}
-
-                            placeholder='No. of people'
-                            {...register('totalPersons')}
-                            className={`w-full px-4 py-3 bg-slate-50 border ${errors?.totalPersons ? 'border-red-300 ring-red-50' : 'border-slate-200 focus:border-indigo-500 ring-transparent'} rounded-xl outline-none focus:ring-4 transition-all`}
-                        />
-                        {errors?.totalPersons && (<p className="text-red-500 text-[11px] font-medium mt-1 ml-1">{errors?.totalPersons.message}</p>)}
-                        {/* <button onClick={handleCustomChange} >Next</button> */}
+                    <div className="flex justify-end">
+                        <button
+                            type="button"
+                            onClick={handleCustomChange}
+                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 flex items-center gap-2"
+                        >
+                            Next
+                            <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
                     </div>
+
                 </div>
 
                 <div className="space-y-4">
@@ -123,7 +179,7 @@ const ExpenseInput = ({ setResult }) => {
                                         </p>
                                     </div>
 
-                                    <div className="col-span-4">
+                                    <div className="col-span-6">
                                         <div className="relative flex flex-col">
                                             <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Amount</label>
                                             <div
@@ -149,7 +205,7 @@ const ExpenseInput = ({ setResult }) => {
                                         </div>
                                     </div>
 
-                                    <div className="col-span-2 flex justify-end">
+                                    {/* <div className="col-span-2 flex justify-end">
                                         {index > 0 && (
                                             <button
                                                 type="button"
@@ -171,7 +227,7 @@ const ExpenseInput = ({ setResult }) => {
                                                 </svg>
                                             </button>
                                         )}
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         ))}
@@ -187,7 +243,7 @@ const ExpenseInput = ({ setResult }) => {
                 )}
 
                 <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
-                    <button
+                    {/* <button
                         type="button"
                         onClick={handleAppend}
                         disabled={paidByFields.length >= watch("totalPersons")}
@@ -197,7 +253,7 @@ const ExpenseInput = ({ setResult }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         Add payer
-                    </button>
+                    </button> */}
 
                     <button
                         type="submit"
