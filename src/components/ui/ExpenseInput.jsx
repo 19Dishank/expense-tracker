@@ -4,7 +4,7 @@ import { useFieldArray, useFormContext } from 'react-hook-form'
 const ExpenseInput = ({ setResult }) => {
 
     const methods = useFormContext()
-    const { register, handleSubmit, control, formState: { errors }, trigger, watch, setError } = methods
+    const { register, handleSubmit, control, formState: { errors }, trigger, watch, setError, setValue } = methods
     const {
         fields: paidByFields,
         append: appendPerson,
@@ -67,24 +67,24 @@ const ExpenseInput = ({ setResult }) => {
             }
         }
     };
+    console.log(errors)
+    // useEffect(() => {
+    //     const desired = parseInt(totalPersons) || 0;
+    //     const current = paidByFields.length;
 
-    useEffect(() => {
-        const desired = parseInt(totalPersons) || 0;
-        const current = paidByFields.length;
-
-        if (desired > current) {
-            for (let i = 0; i < desired - current; i++) {
-                appendPerson({
-                    personName: `person${current + i + 1}`,
-                    amount: ""
-                });
-            }
-        } else if (desired < current) {
-            for (let i = current; i > desired; i--) {
-                removePerson(i - 1);
-            }
-        }
-    }, [totalPersons]);
+    //     if (desired > current) {
+    //         for (let i = 0; i < desired - current; i++) {
+    //             appendPerson({
+    //                 personName: `person${current + i + 1}`,
+    //                 amount: ""
+    //             });
+    //         }
+    //     } else if (desired < current) {
+    //         for (let i = current; i > desired; i--) {
+    //             removePerson(i - 1);
+    //         }
+    //     }
+    // }, [totalPersons]);
     return (
         <>
             <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-5 mt-5 sm:space-y-6 lg:space-y-8">
@@ -110,8 +110,10 @@ const ExpenseInput = ({ setResult }) => {
                                         } rounded-xl outline-none focus:ring-4 transition-all`}
                                 />
                             </div>
+                            <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
+                                {errors?.totalExpense?.message || ""}
+                            </p>
                         </div>
-
                         <div className="space-y-1.5">
                             <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
                                 Group Size
@@ -126,6 +128,9 @@ const ExpenseInput = ({ setResult }) => {
                                     : 'border-slate-200 focus:border-indigo-500 ring-transparent'
                                     } rounded-xl outline-none focus:ring-4 transition-all`}
                             />
+                            <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
+                                {errors?.totalPersons?.message || ""}
+                            </p>
                         </div>
                     </div>
 
@@ -179,7 +184,7 @@ const ExpenseInput = ({ setResult }) => {
                                         </p>
                                     </div>
 
-                                    <div className="col-span-6">
+                                    <div className="col-span-4">
                                         <div className="relative flex flex-col">
                                             <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Amount</label>
                                             <div
@@ -205,11 +210,16 @@ const ExpenseInput = ({ setResult }) => {
                                         </div>
                                     </div>
 
-                                    {/* <div className="col-span-2 flex justify-end">
+                                    <div className="col-span-2 flex justify-end self-center">
                                         {index > 0 && (
                                             <button
                                                 type="button"
-                                                onClick={() => removePerson(index)}
+                                                onClick={() => {
+                                                    const newLength = paidByFields.length - 1;
+
+                                                    removePerson(index);
+                                                    setValue('totalPersons', String(newLength));
+                                                }}
                                                 className="h-10 w-10 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
                                             >
                                                 <svg
@@ -227,7 +237,7 @@ const ExpenseInput = ({ setResult }) => {
                                                 </svg>
                                             </button>
                                         )}
-                                    </div> */}
+                                    </div>
                                 </div>
                             </div>
                         ))}
