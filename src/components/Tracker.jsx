@@ -46,17 +46,16 @@ const Tracker = () => {
             <form onSubmit={handleSubmit(handleExpenseCalculate)} >
                 <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-3 sm:p-4 md:p-6 lg:p-8 font-sans text-slate-900">
                     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-                        <div className="lg:col-span-4 space-y-4">
-                            <div className="bg-white p-5 sm:p-6 md:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                        <div className="lg:col-span-4 space-y-4 ">
+                            <div className=" bg-white p-5 sm:p-6 md:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
                                 <div className="mb-5 sm:mb-6">
                                     <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Expense Overview</h1>
                                 </div>
-
                                 <ExpenseInput setResult={setResult} result={result} isCalculated={isCalculated} />
 
                             </div>
                         </div>
-                        <div className="lg:col-span-8">
+                        <div className="lg:col-span-8 ">
                             <div className="bg-white p-5 sm:p-6 md:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 h-full hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-5 sm:mb-6 lg:mb-8">
                                     <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Split Breakdown</h1>
