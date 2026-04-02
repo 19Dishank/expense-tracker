@@ -1,11 +1,10 @@
 import React, { memo, useEffect, useState } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 
-const ExpenseInput = ({ setResult, isCalculated }) => {
+const ExpenseInput = ({ isCalculated }) => {
     const methods = useFormContext()
     const [isSaved, setIsSaved] = useState(false)
-    // const [isCalculated, setIsCalculated] = useState(false)
-    const { register, handleSubmit, control, formState: { errors }, watch, setValue } = methods
+    const { register, control, formState: { errors }, watch, setValue } = methods
     const {
         fields: paidByFields,
         append: appendPerson,
@@ -16,28 +15,6 @@ const ExpenseInput = ({ setResult, isCalculated }) => {
     })
 
     const totalPersons = watch("totalPersons")
-
-    // const handleExpenseCalculate = (data) => {
-    //     const amountsPaid = data.paidBy.map((amt) => parseInt(amt.amount) || 0)
-    //     const totalPaid = amountsPaid.reduce((total, amt) => total + amt, 0)
-    //     const totalExpense = parseInt(data.totalExpense) || 0
-    //     const totalPersons = parseInt(data.totalPersons) || 0
-    //     const remainedAmount = totalExpense - totalPaid
-    //     const personWhoPaid = amountsPaid.length
-    //     const splitAmountPerPerson = totalExpense / totalPersons
-    //     const personsWhoHaveToPay = totalPersons - personWhoPaid
-
-    //     setResult({
-    //         totalPaid,
-    //         totalExpense,
-    //         totalPersons,
-    //         remainedAmount,
-    //         splitAmountPerPerson,
-    //         personsWhoHaveToPay,
-    //         paidBy: data.paidBy
-    //     })
-    //     setIsCalculated(true)
-    // }
 
 
     const handleCustomChange = () => {
@@ -70,35 +47,37 @@ const ExpenseInput = ({ setResult, isCalculated }) => {
 
     return (
         <>
-            {/* <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-5 mt-5 sm:space-y-6 lg:space-y-8"> */}
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-            <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-
-                    <div className="space-y-1.5">
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
                             Total Expense
                         </label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                                ₹
-                            </span>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span className="text-gray-400 font-bold group-focus-within:text-indigo-500 transition-colors">₹</span>
+                            </div>
                             <input
-                                type="text"
+                                type="number"
+                                step="0.01"
                                 placeholder="0.00"
                                 {...register('totalExpense')}
-                                className={`w-full pl-8 pr-4 py-3 text-sm bg-white border ${errors?.totalExpense
-                                    ? 'border-red-300 ring-red-50'
-                                    : 'border-slate-200 focus:border-indigo-500 ring-transparent'
-                                    } rounded-xl outline-none focus:ring-4 transition-all`}
+                                className={`w-full pl-9 pr-4 py-3.5 text-sm font-semibold bg-gray-50 border ${errors?.totalExpense
+                                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                    : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-500/20'
+                                    } focus:bg-white rounded-2xl outline-none focus:ring-4 transition-all duration-200 text-gray-900 placeholder:text-gray-400 placeholder:font-normal`}
                             />
                         </div>
-                        <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
-                            {errors?.totalExpense?.message || ""}
-                        </p>
+                        {errors?.totalExpense && (
+                            <p className="text-red-500 text-xs font-medium ml-1">
+                                {errors.totalExpense.message}
+                            </p>
+                        )}
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
+
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">
                             Group Size
                         </label>
                         <input
@@ -106,161 +85,136 @@ const ExpenseInput = ({ setResult, isCalculated }) => {
                             min={0}
                             placeholder="No. of people"
                             {...register('totalPersons')}
-                            className={`w-full px-4 py-3 text-sm bg-white border ${errors?.totalPersons
-                                ? 'border-red-300 ring-red-50'
-                                : 'border-slate-200 focus:border-indigo-500 ring-transparent'
-                                } rounded-xl outline-none focus:ring-4 transition-all`}
+                            className={`w-full px-4 py-3.5 text-sm font-semibold bg-gray-50 border ${errors?.totalPersons
+                                ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-500/20'
+                                } focus:bg-white rounded-2xl outline-none focus:ring-4 transition-all duration-200 text-gray-900 placeholder:text-gray-400 placeholder:font-normal`}
                         />
-                        <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
-                            {errors?.totalPersons?.message || ""}
-                        </p>
+                        {errors?.totalPersons && (
+                            <p className="text-red-500 text-xs font-medium ml-1">
+                                {errors.totalPersons.message}
+                            </p>
+                        )}
                     </div>
                 </div>
-
-                {isSaved || <div className="flex justify-end">
-                    <button
-                        type="button"
-                        onClick={handleCustomChange}
-                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 flex items-center gap-2"
-                    >
-                        Save & Continue
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                {!isSaved && (
+                    <div className="flex justify-end pt-2">
+                        <button
+                            type="button"
+                            onClick={handleCustomChange}
+                            className="group px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-2xl shadow-sm hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center gap-2"
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </button>
-                </div>}
-
+                            Save & Continue
+                            <svg
+                                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
-
-            {isSaved && <>
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <h3 className="text-sm font-bold text-slate-700">Payments</h3>
-
+            {isSaved && (
+                <div className="space-y-5 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center gap-3">
+                        <h3 className="text-sm font-bold text-gray-900 capitalize tracking-normal">Payments Breakdown</h3>
+                        <div className="h-px bg-gray-200 flex-1"></div>
                     </div>
 
-                    <div className="space-y-3 h-full overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-3  overflow-y-auto pr-2 custom-scrollbar">
                         {paidByFields.map((field, index) => (
                             <div
                                 key={field.id}
-                                className="group relative bg-linear-to-b from-white to-slate-50/50 p-4 sm:p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md hover:border-indigo-300 hover:bg-linear-to-b hover:from-indigo-50/30 hover:to-slate-50/80 transition-all duration-150"
+                                className="group relative bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all duration-200"
                             >
-                                <div className="grid grid-cols-12 gap-3 items-start">
+                                <div className="grid grid-cols-12 gap-4 items-center">
 
-                                    <div className="col-span-6">
-                                        <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Payer</label>
+                                    <div className="col-span-5 sm:col-span-6 flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Payer</label>
                                         <input
                                             type="text"
                                             defaultValue={field.personName}
-                                            placeholder="Person name"
+                                            placeholder="Name"
                                             {...register(`paidBy.${index}.personName`)}
-                                            className={`w-full text-sm font-medium bg-white rounded-lg px-3 py-2.5 border outline-none transition-all duration-150
-                                         ${errors?.paidBy?.[index]?.personName
-                                                    ? "border-red-400 focus:ring-2 focus:ring-red-200/50 text-red-900"
-                                                    : "border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"} placeholder:text-slate-400`}
+                                            className={`w-full text-sm font-semibold bg-gray-50 focus:bg-white rounded-xl px-3.5 py-2.5 border outline-none transition-all duration-200 ${errors?.paidBy?.[index]?.personName
+                                                ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                                : "border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+                                                } placeholder:text-gray-400 placeholder:font-normal`}
                                         />
-                                        <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
-                                            {errors?.paidBy?.[index]?.personName?.message || ""}
-                                        </p>
                                     </div>
 
-                                    <div className="col-span-4">
-                                        <div className="relative flex flex-col">
-                                            <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Amount</label>
-                                            <div
-                                                className={`flex items-center bg-white rounded-lg px-3 border outline-none transition-all duration-150
-                                                    ${errors?.paidBy?.[index]?.amount
-                                                        ? "border-red-400 focus-within:ring-2 focus-within:ring-red-200/50"
-                                                        : "border-slate-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100"}`}
-                                            >
-                                                <span className="text-slate-400 text-sm font-semibold mr-1">₹</span>
-                                                <input
-                                                    type="number"
-                                                    placeholder="0.00"
-                                                    {...register(`paidBy.${index}.amount`)}
-                                                    className="w-full text-sm font-semibold bg-transparent outline-none py-2.5 placeholder:text-slate-400"
-                                                />
+                                    <div className="col-span-5 flex flex-col gap-1">
+                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Amount</label>
+                                        <div className="relative group/amount">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span className="text-gray-400 font-bold group-focus-within/amount:text-indigo-500 transition-colors">₹</span>
                                             </div>
-
-                                            {errors?.paidBy?.[index]?.amount && (
-                                                <p className="text-red-500 text-xs mt-1.5 font-medium">
-                                                    {errors.paidBy[index].amount.message}
-                                                </p>
-                                            )}
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="0.00"
+                                                {...register(`paidBy.${index}.amount`)}
+                                                className={`w-full pl-7 pr-3 py-2.5 text-sm font-semibold bg-gray-50 focus:bg-white border rounded-xl outline-none transition-all duration-200 ${errors?.paidBy?.[index]?.amount
+                                                    ? "border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                                                    : "border-gray-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+                                                    } placeholder:text-gray-400 placeholder:font-normal`}
+                                            />
                                         </div>
                                     </div>
 
-                                    <div className="col-span-2 flex justify-end self-center">
-                                        {index > 0 && (
+                                    <div className="col-span-2 sm:col-span-1 flex justify-end mt-5">
+                                        {index > 0 ? (
                                             <button
                                                 type="button"
                                                 onClick={() => {
                                                     const newLength = paidByFields.length - 1;
-
                                                     removePerson(index);
                                                     setValue('totalPersons', String(newLength));
                                                 }}
-                                                className="h-10 w-10 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
+                                                className="h-10 w-10 flex items-center justify-center rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all duration-200 active:scale-95"
                                             >
-                                                <svg
-                                                    className="w-5 h-5"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                    />
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                             </button>
+                                        ) : (
+                                            <div className="h-10 w-10"></div>
                                         )}
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
+
+                    {errors?.paidBy?.root && (
+                        <div className="p-3 bg-red-50 border border-red-100 rounded-2xl flex items-center justify-center gap-2">
+                            <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-red-600 text-xs font-bold">
+                                {errors.paidBy.root.message}
+                            </p>
+                        </div>
+                    )}
+
+                    {!isCalculated && (
+                        <div className="pt-4">
+                            <button
+                                type="submit"
+                                className="w-full sm:w-auto sm:min-w-50] px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black tracking-wide text-sm rounded-2xl shadow-md hover:shadow-xl hover:shadow-indigo-500/25 hover:-translate-y-1 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                                Calculate Splits
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    )}
                 </div>
-                {errors?.paidBy?.root && (
-                    <div className="p-2.5 sm:p-3 bg-red-50 border border-red-100 rounded-xl">
-                        <p className="text-red-600 text-xs text-center font-medium">
-                            {errors?.paidBy.root.message}
-                        </p>
-                    </div>
-                )}
-                {isCalculated || <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
-                    {/* <button
-                        type="button"
-                        onClick={handleAppend}
-                        disabled={paidByFields.length >= watch("totalPersons")}
-                        // disabled={disabled}
-                        className=" border-dashed flex-1 inline-flex items-center justify-center gap-2  px-4 sm:px-5 py-2.5 sm:py-3 border-2 rounded-xl font-bold  text-xs sm:text-sm  transition-all duration-150  bg-slate-100 text-slate-700 border-slate-400 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:border-gray-300 disabled:cursor-not-allowed disabled:opacity-70">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Add payer
-                    </button> */}
-
-                    <button
-                        type="submit"
-                        className="flex-1 px-4 sm:px-5 py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-200/50 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 cursor-pointer"
-                    >
-                        Calculate Splits
-                    </button>
-                </div>}
-            </>}
-
-
-
-
-            {/* </form> */}
+            )}
         </>
     )
 }

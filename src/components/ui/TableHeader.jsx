@@ -1,5 +1,7 @@
-export const TableHeader = ({ title }) => {
+export const TableHeader = ({ title, align = "left" }) => {
     return (
-        <th className="px-3 sm:px-4 lg:px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-100">{title}</th>
-    )
+        <th className={`px-4 py-4 text-xs font-bold uppercase tracking-widest text-gray-400 bg-gray-50/50 border-b border-gray-100 text-${align}`}>
+            {title}
+        </th>
+    );
 }
