@@ -1,10 +1,11 @@
 import React, { memo, useEffect, useState } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 
-const ExpenseInput = ({ setResult }) => {
-
+const ExpenseInput = ({ setResult, isCalculated }) => {
     const methods = useFormContext()
-    const { register, handleSubmit, control, formState: { errors }, trigger, watch, setError, setValue } = methods
+    const [isSaved, setIsSaved] = useState(false)
+    // const [isCalculated, setIsCalculated] = useState(false)
+    const { register, handleSubmit, control, formState: { errors }, watch, setValue } = methods
     const {
         fields: paidByFields,
         append: appendPerson,
@@ -12,148 +13,131 @@ const ExpenseInput = ({ setResult }) => {
     } = useFieldArray({
         control,
         name: "paidBy",
-        shouldUnregister: true
     })
 
     const totalPersons = watch("totalPersons")
 
-    const handleExpenseCalculate = (data) => {
-        const amountsPaid = data.paidBy.map((amt) => parseInt(amt.amount) || 0)
-        const totalPaid = amountsPaid.reduce((total, amt) => total + amt, 0)
-        const totalExpense = parseInt(data.totalExpense) || 0
-        const totalPersons = parseInt(data.totalPersons) || 0
-        const remainedAmount = totalExpense - totalPaid
-        const personWhoPaid = amountsPaid.length
-        const splitAmountPerPerson = totalExpense / totalPersons
-        const personsWhoHaveToPay = totalPersons - personWhoPaid
+    // const handleExpenseCalculate = (data) => {
+    //     const amountsPaid = data.paidBy.map((amt) => parseInt(amt.amount) || 0)
+    //     const totalPaid = amountsPaid.reduce((total, amt) => total + amt, 0)
+    //     const totalExpense = parseInt(data.totalExpense) || 0
+    //     const totalPersons = parseInt(data.totalPersons) || 0
+    //     const remainedAmount = totalExpense - totalPaid
+    //     const personWhoPaid = amountsPaid.length
+    //     const splitAmountPerPerson = totalExpense / totalPersons
+    //     const personsWhoHaveToPay = totalPersons - personWhoPaid
 
-        setResult({
-            totalPaid,
-            totalExpense,
-            totalPersons,
-            remainedAmount,
-            splitAmountPerPerson,
-            personsWhoHaveToPay,
-            paidBy: data.paidBy
-        })
-    }
-    const handleAppend = () => {
-        trigger("paidBy");
-        if (errors.paidBy) return
-        if (!errors?.paidBy) {
-            appendPerson({ personName: "", amount: "" })
-        }
-    }
+    //     setResult({
+    //         totalPaid,
+    //         totalExpense,
+    //         totalPersons,
+    //         remainedAmount,
+    //         splitAmountPerPerson,
+    //         personsWhoHaveToPay,
+    //         paidBy: data.paidBy
+    //     })
+    //     setIsCalculated(true)
+    // }
 
-    const handleButtonDisabled = () => {
-        if (paidByFields.length >= watch("totalPersons")) return true
-        setError("maximum-limit", { type: "custom", message: "Maximum limit reached" })
-    }
 
     const handleCustomChange = () => {
         const desired = parseInt(totalPersons) || 0;
         const current = paidByFields.length;
 
         if (desired > current) {
-            for (let i = 0; i < desired - current; i++) {
+
+            for (let i = current; i < desired; i++) {
                 appendPerson({
-                    personName: `person${current + i + 1}`,
+                    personName: `person${i + 1}`,
                     amount: ""
                 });
             }
         } else if (desired < current) {
-            for (let i = current; i > desired; i--) {
-                removePerson(i - 1);
+
+            for (let i = current - 1; i >= desired; i--) {
+                removePerson(i);
             }
         }
-    };
-    console.log(errors)
-    // useEffect(() => {
-    //     const desired = parseInt(totalPersons) || 0;
-    //     const current = paidByFields.length;
 
-    //     if (desired > current) {
-    //         for (let i = 0; i < desired - current; i++) {
-    //             appendPerson({
-    //                 personName: `person${current + i + 1}`,
-    //                 amount: ""
-    //             });
-    //         }
-    //     } else if (desired < current) {
-    //         for (let i = current; i > desired; i--) {
-    //             removePerson(i - 1);
-    //         }
-    //     }
-    // }, [totalPersons]);
+        setIsSaved(true);
+    };
+
+    useEffect(() => {
+        if (isSaved) {
+            handleCustomChange();
+        }
+    }, [totalPersons]);
+
     return (
         <>
-            <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-5 mt-5 sm:space-y-6 lg:space-y-8">
-                <div className="space-y-4">
+            {/* <form onSubmit={handleSubmit(handleExpenseCalculate)} className="space-y-5 mt-5 sm:space-y-6 lg:space-y-8"> */}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
 
-                        <div className="space-y-1.5">
-                            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
-                                Total Expense
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                                    ₹
-                                </span>
-                                <input
-                                    type="text"
-                                    placeholder="0.00"
-                                    {...register('totalExpense')}
-                                    className={`w-full pl-8 pr-4 py-3 text-sm bg-white border ${errors?.totalExpense
-                                        ? 'border-red-300 ring-red-50'
-                                        : 'border-slate-200 focus:border-indigo-500 ring-transparent'
-                                        } rounded-xl outline-none focus:ring-4 transition-all`}
-                                />
-                            </div>
-                            <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
-                                {errors?.totalExpense?.message || ""}
-                            </p>
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
-                                Group Size
-                            </label>
+                    <div className="space-y-1.5">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
+                            Total Expense
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                                ₹
+                            </span>
                             <input
-                                type="number"
-                                min={0}
-                                placeholder="No. of people"
-                                {...register('totalPersons')}
-                                className={`w-full px-4 py-3 text-sm bg-white border ${errors?.totalPersons
+                                type="text"
+                                placeholder="0.00"
+                                {...register('totalExpense')}
+                                className={`w-full pl-8 pr-4 py-3 text-sm bg-white border ${errors?.totalExpense
                                     ? 'border-red-300 ring-red-50'
                                     : 'border-slate-200 focus:border-indigo-500 ring-transparent'
                                     } rounded-xl outline-none focus:ring-4 transition-all`}
                             />
-                            <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
-                                {errors?.totalPersons?.message || ""}
-                            </p>
                         </div>
+                        <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
+                            {errors?.totalExpense?.message || ""}
+                        </p>
                     </div>
-
-                    <div className="flex justify-end">
-                        <button
-                            type="button"
-                            onClick={handleCustomChange}
-                            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 flex items-center gap-2"
-                        >
-                            Next
-                            <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
+                    <div className="space-y-1.5">
+                        <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide ml-1">
+                            Group Size
+                        </label>
+                        <input
+                            type="number"
+                            min={0}
+                            placeholder="No. of people"
+                            {...register('totalPersons')}
+                            className={`w-full px-4 py-3 text-sm bg-white border ${errors?.totalPersons
+                                ? 'border-red-300 ring-red-50'
+                                : 'border-slate-200 focus:border-indigo-500 ring-transparent'
+                                } rounded-xl outline-none focus:ring-4 transition-all`}
+                        />
+                        <p className="text-red-500 text-xs mt-1.5 font-medium min-h-4">
+                            {errors?.totalPersons?.message || ""}
+                        </p>
                     </div>
-
                 </div>
 
+                {isSaved || <div className="flex justify-end">
+                    <button
+                        type="button"
+                        onClick={handleCustomChange}
+                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 flex items-center gap-2"
+                    >
+                        Save & Continue
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>}
+
+            </div>
+
+            {isSaved && <>
                 <div className="space-y-4">
                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                         <h3 className="text-sm font-bold text-slate-700">Payments</h3>
@@ -172,6 +156,7 @@ const ExpenseInput = ({ setResult }) => {
                                         <label className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider ml-0.5 mb-1.5 block">Payer</label>
                                         <input
                                             type="text"
+                                            defaultValue={field.personName}
                                             placeholder="Person name"
                                             {...register(`paidBy.${index}.personName`)}
                                             className={`w-full text-sm font-medium bg-white rounded-lg px-3 py-2.5 border outline-none transition-all duration-150
@@ -243,7 +228,6 @@ const ExpenseInput = ({ setResult }) => {
                         ))}
                     </div>
                 </div>
-
                 {errors?.paidBy?.root && (
                     <div className="p-2.5 sm:p-3 bg-red-50 border border-red-100 rounded-xl">
                         <p className="text-red-600 text-xs text-center font-medium">
@@ -251,8 +235,7 @@ const ExpenseInput = ({ setResult }) => {
                         </p>
                     </div>
                 )}
-
-                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
+                {isCalculated || <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
                     {/* <button
                         type="button"
                         onClick={handleAppend}
@@ -271,10 +254,17 @@ const ExpenseInput = ({ setResult }) => {
                     >
                         Calculate Splits
                     </button>
-                </div>
-            </form>
+                </div>}
+            </>}
+
+
+
+
+            {/* </form> */}
         </>
     )
 }
 
 export default memo(ExpenseInput)
+
+

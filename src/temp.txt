@@ -1,0 +1,219 @@
+    // useEffect(() => {
+    //     const desired = parseInt(totalPersons) || 0;
+    //     const current = paidByFields.length;
+
+    //     if (desired > current) {
+    //         for (let i = 0; i < desired - current; i++) {
+    //             appendPerson({
+    //                 personName: `person${current + i + 1}`,
+    //                 amount: ""
+    //             });
+    //         }
+    //     } else if (desired < current) {
+    //         for (let i = current; i > desired; i--) {
+    //             removePerson(i - 1);
+    //         }
+    //     }
+    // }, [totalPersons]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    import React, { memo, useEffect, useState } from 'react'
+import { useFieldArray, useFormContext } from 'react-hook-form'
+
+const ExpenseInput = ({ setResult }) => {
+    const methods = useFormContext()
+    const [isSaved, setIsSaved] = useState(false)
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: { errors },
+        watch,
+        setValue
+    } = methods
+
+    const {
+        fields: paidByFields,
+        append: appendPerson,
+        remove: removePerson
+    } = useFieldArray({
+        control,
+        name: "paidBy",
+    })
+
+    const totalPersons = watch("totalPersons")
+
+    // ✅ Handle add/remove fields
+    const handleCustomChange = () => {
+        const desired = parseInt(totalPersons) || 0
+        const current = paidByFields.length
+
+        if (desired > current) {
+            for (let i = current; i < desired; i++) {
+                appendPerson({
+                    personName: `person${i + 1}`,
+                    amount: ""
+                })
+            }
+        } else if (desired < current) {
+            for (let i = current - 1; i >= desired; i--) {
+                removePerson(i)
+            }
+        }
+    }
+
+    // ✅ Auto update fields AFTER Save & Continue
+    useEffect(() => {
+        if (isSaved) {
+            handleCustomChange()
+        }
+    }, [totalPersons])
+
+    // ✅ Calculate result (only on submit)
+    const handleExpenseCalculate = (data) => {
+        const amountsPaid = data.paidBy.map((amt) => Number(amt.amount) || 0)
+
+        const totalPaid = amountsPaid.reduce((total, amt) => total + amt, 0)
+        const totalExpense = Number(data.totalExpense) || 0
+        const totalPersons = Number(data.totalPersons) || 0
+
+        const remainedAmount = totalExpense - totalPaid
+        const splitAmountPerPerson = totalExpense / totalPersons
+
+        setResult({
+            totalPaid,
+            totalExpense,
+            totalPersons,
+            remainedAmount,
+            splitAmountPerPerson,
+            personsWhoHaveToPay: totalPersons - amountsPaid.length,
+            paidBy: data.paidBy
+        })
+    }
+
+    return (
+        <form
+            onSubmit={handleSubmit(handleExpenseCalculate)}
+            className="space-y-5 mt-5"
+        >
+            {/* 🔹 Top Inputs */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                {/* Total Expense */}
+                <div>
+                    <label className="text-xs font-semibold">Total Expense</label>
+                    <input
+                        type="text"
+                        placeholder="0.00"
+                        {...register('totalExpense')}
+                        className="w-full px-3 py-2 border rounded-lg"
+                    />
+                </div>
+
+                {/* Group Size */}
+                <div>
+                    <label className="text-xs font-semibold">Group Size</label>
+                    <input
+                        type="number"
+                        min={0}
+                        placeholder="No. of people"
+                        {...register('totalPersons')}
+                        className="w-full px-3 py-2 border rounded-lg"
+                    />
+                </div>
+            </div>
+
+            {/* 🔹 Save Button */}
+            <div className="flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => {
+                        setIsSaved(true)
+                        handleCustomChange()
+                    }}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+                >
+                    Save & Continue
+                </button>
+            </div>
+
+            {/* 🔹 Dynamic Fields */}
+            {isSaved && (
+                <div className="space-y-3">
+                    <h3 className="font-semibold">Payments</h3>
+
+                    {paidByFields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-12 gap-2">
+
+                            {/* Name */}
+                            <div className="col-span-6">
+                                <input
+                                    type="text"
+                                    defaultValue={field.personName}
+                                    placeholder="Person name"
+                                    {...register(`paidBy.${index}.personName`)}
+                                    className="w-full px-3 py-2 border rounded-lg"
+                                />
+                            </div>
+
+                            {/* Amount */}
+                            <div className="col-span-4">
+                                <input
+                                    type="number"
+                                    placeholder="0"
+                                    defaultValue={field.amount}
+                                    {...register(`paidBy.${index}.amount`)}
+                                    className="w-full px-3 py-2 border rounded-lg"
+                                />
+                            </div>
+
+                            {/* Remove */}
+                            <div className="col-span-2 flex justify-end">
+                                {index > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newLength = paidByFields.length - 1
+                                            removePerson(index)
+                                            setValue('totalPersons', newLength)
+                                        }}
+                                        className="text-red-500"
+                                    >
+                                        ❌
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* 🔹 Submit */}
+            {isSaved && (
+                <button
+                    type="submit"
+                    className="w-full py-2 bg-green-600 text-white rounded-lg"
+                >
+                    Calculate Splits
+                </button>
+            )}
+        </form>
+    )
+}
+
+export default memo(ExpenseInput)
