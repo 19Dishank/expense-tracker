@@ -47,17 +47,17 @@ const Tracker = () => {
                         <div className="lg:col-span-4 space-y-4">
                             <div className="bg-white p-5 sm:p-6 md:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
                                 <div className="mb-5 sm:mb-6">
-                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Expense</h1>
+                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Expense Overview</h1>
                                 </div>
 
                                 <ExpenseInput setResult={setResult} result={result} isCalculated={isCalculated} />
 
                             </div>
                         </div>
-                        {result && <div className="lg:col-span-8">
+                        <div className="lg:col-span-8">
                             <div className="bg-white p-5 sm:p-6 md:p-7 lg:p-8 rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 h-full hover:shadow-md transition-shadow">
                                 <div className="flex items-center justify-between mb-5 sm:mb-6 lg:mb-8">
-                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Results</h1>
+                                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Split Breakdown</h1>
                                     {result && (
                                         <button
                                             type="submit"
@@ -75,7 +75,7 @@ const Tracker = () => {
                                 </div>
                                 <Display result={result} />
                             </div>
-                        </div>}
+                        </div>
                     </div>
                 </div>
             </form>
